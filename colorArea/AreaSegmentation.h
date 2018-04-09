@@ -5,45 +5,46 @@
 
 namespace colorArea
 {
-	class AreaSegmentation
+	template<typename T>
+	struct ColorStruct
 	{
-	public:
-		AreaSegmentation();
-		~AreaSegmentation();
-
-		void SetColorList(const std::vector<cv::Vec3b> &List);
-		void SetColorList(int span);
-		bool ColorSegmentation(const cv::Mat &src, cv::Mat &dst) const;
-
-	private:
-		inline void CalculateColor(const unsigned char * src, unsigned char * dst) const;
-		
-	private:
-		unsigned char * ColorList = nullptr;
-		int ColorListLength = 0;
+		T b;
+		T g;
+		T r;
 	};
 
-	inline void AreaSegmentation::CalculateColor(const unsigned char * src, unsigned char * dst) const
+	class ColorSegmentation
 	{
-		int distance, minDistance = 195075, minIndex;
-		int x, y, z;
-		int temp;
-		for (int i = 0; i < ColorListLength; ++i)
-		{
-			temp = i * 3;
-			x = src[0] - ColorList[temp];
-			y = src[1] - ColorList[temp + 1];
-			z = src[2] - ColorList[temp + 2];
-			distance = x * x + y * y + z * z;
-			if (distance < minDistance)
-			{
-				minDistance = distance;
-				minIndex = i;
-			}
-		}
-		temp = minIndex * 3;
-		dst[0] = ColorList[temp];
-		dst[1] = ColorList[temp + 1];
-		dst[2] = ColorList[temp + 2];
+	public:
+		ColorSegmentation();
+		~ColorSegmentation();
+
+	public:
+		//设置区域最小面积
+		void setMinArea(unsigned int area);
+		bool Segmentation(const cv::Mat &src) const;
+		bool Segmentation1(const cv::Mat &src) const;
+		bool Segmentation2(const cv::Mat &src) const;
+		bool DrawRect(cv::Mat src, cv::RotatedRect rect, cv::Scalar color);
+
+	private:
+		void showEdge(const cv::Mat & src, cv::Mat & dst, cv::Mat & edge) const;
+		void floodFill(cv::Mat & src, cv::Mat & dst, cv::Point seed, cv::Scalar loDiff, cv::Scalar upDiff);
+		void floodFill(cv::Mat & src, cv::Mat & dst, cv::Point seed);
+		inline void floodFillScanline(int x, int y);
+		inline void floodFillCheckAndCal(const ColorStruct<unsigned char> *color);
+		
+
+	private:
+		unsigned int MinArea;
+	};
+
+	inline void ColorSegmentation::floodFillScanline(int x, int y)
+	{
+	}
+
+	inline void ColorSegmentation::floodFillCheckAndCal(const ColorStruct<unsigned char> *color)
+	{
+
 	}
 }
