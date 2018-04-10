@@ -42,6 +42,7 @@ namespace colorArea
 
 	//private:
 		cv::Mat maskImage;
+		std::vector<ColorStruct<unsigned char>> indexColor;
 		const cv::Mat *srcImage = nullptr;
 		int srcSpace, maskSpace;
 		int index;
