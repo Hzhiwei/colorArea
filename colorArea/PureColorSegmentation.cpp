@@ -180,6 +180,7 @@ namespace colorArea
 			for (int j = 0; j < maskImage.rows; ++j)
 			{
 				if (repository.find(maskImage.at<int>(j, i)) == repository.end())
+					//if≈–∂œ «ÀŸ∂»∆øæ±
 				{
 					repository.insert(maskImage.at<int>(j, i));
 					edgeList.push_back(edgeTrack(Point(i, j)));

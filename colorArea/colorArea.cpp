@@ -5,6 +5,7 @@
 //#include "AreaSegmentation.h"
 #include "PureColorSegmentation.h"
 #include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 using namespace colorArea;
 
@@ -39,7 +40,9 @@ int main()
 	//CS.DrawRect(src, cv::RotatedRect(cv::Point2f(300, 300), cv::Size2f(500, 500), 45), cv::Scalar(255, 0, 0));
 	//cv::imshow("src", src);
 	PureColorSegmentation pcs;
+
 	pcs.segmentation(src);
+
 	cv::imshow("src", src);
 	cv::imwrite("edge.png", src);
 
