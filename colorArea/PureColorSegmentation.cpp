@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "PureColorSegmentation.h"
+#include <vector>
+#include <set>
 
 using namespace std;
 using namespace cv;
@@ -14,7 +16,17 @@ namespace colorArea
 	{
 	}
 
-	bool PureColorSegmentation::segmentation(const cv::Mat & src)
+	int PureColorSegmentation::segmentation( cv::Mat & src)
+	{
+		floodFillAll(src);
+		vector<vector<Point>> edge = edgeTrackAll();
+		drawEdge(src, edge, -1, Scalar(0, 0, 0));
+
+		return indexColor.size() - 1;
+	}
+
+	//根据颜色分块，块关系由maskImage提供
+	void PureColorSegmentation::floodFillAll(const cv::Mat & src)
 	{
 		srcImage = &src;
 
@@ -48,10 +60,6 @@ namespace colorArea
 				}
 			}
 		}
-
-		imshow("mask", maskImage);
-
-		return true;
 	}
 
 	//漫水填充
@@ -130,6 +138,131 @@ namespace colorArea
 				{
 					floodFillScanline((j + 1), (imask + 1));
 				}
+			}
+		}
+	}
+
+	vector<vector<Point>> PureColorSegmentation::edgeTrackAll(void)
+	{
+		surroundPointerDiffer[0] = -maskImage.cols - 1;
+		surroundPointerDiffer[1] = -maskImage.cols;
+		surroundPointerDiffer[2] = -maskImage.cols + 1;
+		surroundPointerDiffer[3] = 1;
+		surroundPointerDiffer[4] = maskImage.cols + 1;
+		surroundPointerDiffer[5] = maskImage.cols;
+		surroundPointerDiffer[6] = maskImage.cols - 1;
+		surroundPointerDiffer[7] = -1;
+		surroundPointerDiffer[8] = -maskImage.cols - 1;
+
+		surroundIndexDiffer[0][0] = -1;
+		surroundIndexDiffer[0][1] = -1;
+		surroundIndexDiffer[1][0] = 0;
+		surroundIndexDiffer[1][1] = -1;
+		surroundIndexDiffer[2][0] = 1;
+		surroundIndexDiffer[2][1] = -1;
+		surroundIndexDiffer[3][0] = 1;
+		surroundIndexDiffer[3][1] = 0;
+		surroundIndexDiffer[4][0] = 1;
+		surroundIndexDiffer[4][1] = 1;
+		surroundIndexDiffer[5][0] = 0;
+		surroundIndexDiffer[5][1] = 1;
+		surroundIndexDiffer[6][0] = -1;
+		surroundIndexDiffer[6][1] = 1;
+		surroundIndexDiffer[7][0] = -1;
+		surroundIndexDiffer[7][1] = 0;
+
+		set<int> repository;
+		vector<vector<Point>> edgeList;
+
+		repository.insert(-1);
+		for (int i = 0; i < maskImage.cols; ++i)
+		{
+			for (int j = 0; j < maskImage.rows; ++j)
+			{
+				if (repository.find(maskImage.at<int>(j, i)) == repository.end())
+				{
+					repository.insert(maskImage.at<int>(j, i));
+					edgeList.push_back(edgeTrack(Point(i, j)));
+				}
+			}
+		}
+
+		return edgeList;
+	}
+
+	//根据种子点查找轮廓，种子点必须位于轮廓上。
+	//轮廓位置为区域内点上
+	//轮廓方向顺时针
+	vector<Point> PureColorSegmentation::edgeTrack(Point seed)
+	{
+		vector<Point> edgePointList;
+
+		edgePointList.push_back(seed);
+
+		const int *seedPointer = (int *)maskImage.data + maskImage.cols * seed.y + seed.x;
+		const int *currentPointer = seedPointer;
+		int nextIndex;
+
+		//查找种子点后的第一个分界点
+		for (int i = 0; i < 8; ++i)
+		{
+			if ((*(currentPointer + surroundPointerDiffer[i]) != *currentPointer)
+				&& (*(currentPointer + surroundPointerDiffer[i + 1]) == *currentPointer))
+			{
+				nextIndex = (i + 1) % 8;
+				break;
+			}
+		}
+
+		while (currentPointer + surroundPointerDiffer[nextIndex] != seedPointer)
+		{
+			edgePointList.push_back(Point(edgePointList.back().x + surroundIndexDiffer[nextIndex][0], edgePointList.back().y + surroundIndexDiffer[nextIndex][1]));
+
+			currentPointer += surroundPointerDiffer[nextIndex];
+
+			for (int i = (nextIndex + 5) % 8; ; i = (i + 1) % 8)
+			{
+				if (*(currentPointer + surroundPointerDiffer[i]) == *seedPointer)
+				{
+					nextIndex = i;
+					break;
+				}
+			}
+		}
+
+		for(auto i = edgePointList.begin(); i != edgePointList.end(); ++i)
+		{
+			--i->y;
+			--i->x;
+		}
+
+		return edgePointList; 
+	}
+
+	void PureColorSegmentation::drawEdge(cv::Mat & dst, const std::vector<std::vector<cv::Point>>& edge, int index, cv::Scalar color)
+	{
+		if (index >= (int)edge.size())
+		{
+			return;
+		}
+
+		ColorStruct<unsigned char> colorData(color.val[0], color.val[1], color.val[2]);
+
+		if (index < 0)
+		{
+			for (auto i = edge.begin(); i != edge.end(); ++i)
+			{
+				for (auto j = i->begin(); j != i->end(); ++j)
+				{
+					*((ColorStruct<unsigned char> *)dst.data + dst.cols * j->y + j->x) = colorData;
+				}
+			}
+		}
+		else
+		{
+			for (auto i = edge[index].begin(); i != edge[index].end(); ++i)
+			{
+				*((ColorStruct<unsigned char> *)dst.data + dst.cols * i->y + i->x) = colorData;
 			}
 		}
 	}
