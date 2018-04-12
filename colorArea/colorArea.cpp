@@ -33,7 +33,7 @@ int main()
 	//}
 	
 
-	cv::Mat src = cv::imread("image/pure3.png");
+	cv::Mat src = cv::imread("image/pure5.png");
 	//ColorSegmentation CS;
 	//CS.Segmentation1(src);
 	//CS.FFTtest(src);
@@ -44,7 +44,7 @@ int main()
 	pcs.segmentation(src);
 
 	cv::imshow("src", src);
-	cv::imwrite("edge.png", src);
+	//cv::imwrite("edge.png", src);
 
 	while (cv::waitKey(30));
 

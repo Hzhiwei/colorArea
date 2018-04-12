@@ -202,7 +202,7 @@ namespace colorArea
 
 		const int *seedPointer = (int *)maskImage.data + maskImage.cols * seed.y + seed.x;
 		const int *currentPointer = seedPointer;
-		int nextIndex;
+		int nextIndex = -1;
 
 		//查找种子点后的第一个分界点
 		for (int i = 0; i < 8; ++i)
@@ -213,6 +213,13 @@ namespace colorArea
 				nextIndex = (i + 1) % 8;
 				break;
 			}
+		}
+
+		if (nextIndex == -1)
+		{
+			--edgePointList[0].x;
+			--edgePointList[0].y;
+			return edgePointList;
 		}
 
 		while (currentPointer + surroundPointerDiffer[nextIndex] != seedPointer)
