@@ -67,10 +67,10 @@ namespace colorArea
 	{
 		ColorStruct<unsigned char> *srcPoint = (ColorStruct<unsigned char> *)(srcImage->ptr<Vec3b>(y)) + x;
 		int *maskPoint = (int *)(maskImage.ptr<int>(y + 1)) + x + 1;
-		currentColor = *srcPoint;
+		averageColor = *srcPoint;
 		index += 1;
-		indexColor.push_back(currentColor);
 		floodFillScanline(srcPoint, maskPoint);
+		indexColor.push_back(averageColor);
 	}
 
 	//线扫描找出种子点的连通区域
@@ -84,7 +84,7 @@ namespace colorArea
 		{
 			if (*minMasky == 0)
 			{
-				if (*miny == currentColor)
+				if (floodFillCheckAndCal(miny))
 				{
 					*minMasky = index;
 				}
@@ -102,7 +102,7 @@ namespace colorArea
 		{
 			if (*maxMasky == 0)
 			{
-				if (*maxy == currentColor)
+				if (floodFillCheckAndCal(maxy))
 				{
 					*maxMasky = index;
 				}
@@ -123,7 +123,7 @@ namespace colorArea
 		{
 			if (*(imask - 1) == 0)
 			{
-				if (*(j - 1) == currentColor)
+				if (floodFillCheckAndCal(j - 1))
 
 				{
 					floodFillScanline((j - 1), (imask - 1));
@@ -134,7 +134,7 @@ namespace colorArea
 		{
 			if (*(imask + 1) == 0)
 			{
-				if (*(j + 1) == currentColor)
+				if (floodFillCheckAndCal(j + 1))
 				{
 					floodFillScanline((j + 1), (imask + 1));
 				}
@@ -180,7 +180,7 @@ namespace colorArea
 			for (int j = 0; j < maskImage.rows; ++j)
 			{
 				if (repository.find(maskImage.at<int>(j, i)) == repository.end())
-					//if判断是速度瓶颈
+					//if判断是速度瓶颈（开O2优化运行时间可以从600ms降到35ms）
 				{
 					repository.insert(maskImage.at<int>(j, i));
 					edgeList.push_back(edgeTrack(Point(i, j)));
@@ -256,7 +256,7 @@ namespace colorArea
 
 		ColorStruct<unsigned char> colorData(color.val[0], color.val[1], color.val[2]);
 
-		if (index < 0)
+		if (index < 0) 
 		{
 			for (auto i = edge.begin(); i != edge.end(); ++i)
 			{

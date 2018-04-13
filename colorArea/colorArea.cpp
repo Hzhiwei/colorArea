@@ -33,7 +33,7 @@ int main()
 	//}
 	
 
-	cv::Mat src = cv::imread("image/pure5.png");
+	cv::Mat src = cv::imread("image/pure4.png");
 	//ColorSegmentation CS;
 	//CS.Segmentation1(src);
 	//CS.FFTtest(src);

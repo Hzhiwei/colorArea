@@ -24,9 +24,6 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="AreaSegmentation.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="PureColorSegmentation.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -36,9 +33,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="colorArea.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="AreaSegmentation.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="PureColorSegmentation.cpp">

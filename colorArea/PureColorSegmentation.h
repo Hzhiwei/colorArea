@@ -22,9 +22,23 @@ namespace colorArea
 			r = _r;
 		}
 
-		bool operator==(const ColorStruct<T> & Param) const
+		inline bool operator==(const ColorStruct<T> & Param) const
 		{
 			return !memcmp(this, &Param, sizeof(ColorStruct<T>));
+		}
+
+		inline ColorStruct<T> operator-(const ColorStruct<T> & Param) const
+		{
+			return ColorStruct<T>(
+				b >= Param.b ? b - Param.b : Param.b - b,
+				g >= Param.g ? g - Param.g : Param.g - g,
+				r >= Param.r ? r - Param.r : Param.r - r);
+		}
+
+		inline int distance(const ColorStruct<T> & Param) const
+		{
+			ColorStruct<T> temp = operator-(Param);
+			return temp.b * temp.b + temp.g * temp.g + temp.r * temp.r;
 		}
 	};
 
@@ -50,7 +64,7 @@ namespace colorArea
 		const cv::Mat *srcImage = nullptr;
 		int srcSpace, maskSpace;
 		int index;
-		ColorStruct<unsigned char> currentColor;
+		ColorStruct<unsigned char> averageColor;
 		//surroundDiffer为中心点的八邻域像素地址于中心点的差，surroundDiffer[8] = surroundDiffer[0]，方便计算
 		/*
 		0/8	1	2
@@ -64,7 +78,7 @@ namespace colorArea
 
 	inline bool PureColorSegmentation::floodFillCheckAndCal(const ColorStruct<unsigned char>* color)
 	{
-		return *color == currentColor;
+		return color->distance(averageColor) < 1500;
 	}
 }
 
