@@ -16,21 +16,32 @@ namespace colorArea
 	{
 	}
 
-	int PureColorSegmentation::segmentation( cv::Mat & src)
+	int PureColorSegmentation::segmentation(cv::Mat & src)
 	{
-		floodFillAll(src);
+		if (src.empty())
+		{
+			return -1;
+		}
+
+		srcImage = new Mat();
+		*(const_cast<Mat*>(srcImage)) = src.clone();
+
+		GaussianBlur(*srcImage, *srcImage, Size(5, 5), 5);
+
+		floodFillAll();
 		vector<vector<Point>> edge = edgeTrackAll();
 		drawEdge(src, edge, -1, Scalar(0, 0, 0));
 
 		return indexColor.size() - 1;
+
+		delete srcImage;
+		srcImage = nullptr;
 	}
 
 	//根据颜色分块，块关系由maskImage提供
-	void PureColorSegmentation::floodFillAll(const cv::Mat & src)
+	void PureColorSegmentation::floodFillAll()
 	{
-		srcImage = &src;
-
-		maskImage = Mat::zeros(src.rows + 2, srcImage->cols + 2, CV_32SC1);
+		maskImage = Mat::zeros(srcImage->rows + 2, srcImage->cols + 2, CV_32SC1);
 
 		//设置mask边界
 		for (int i = 0; i < maskImage.rows; ++i)
@@ -69,8 +80,10 @@ namespace colorArea
 		int *maskPoint = (int *)(maskImage.ptr<int>(y + 1)) + x + 1;
 		averageColor = *srcPoint;
 		index += 1;
+		counter = 0;
+		addPointToAverage(srcPoint);
 		floodFillScanline(srcPoint, maskPoint);
-		indexColor.push_back(averageColor);
+		indexColor.push_back(ColorStruct<unsigned char>(averageColor.b, averageColor.g, averageColor.r));
 	}
 
 	//线扫描找出种子点的连通区域
@@ -124,7 +137,6 @@ namespace colorArea
 			if (*(imask - 1) == 0)
 			{
 				if (floodFillCheckAndCal(j - 1))
-
 				{
 					floodFillScanline((j - 1), (imask - 1));
 				}
