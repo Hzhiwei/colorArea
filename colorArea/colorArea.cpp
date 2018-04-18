@@ -43,9 +43,9 @@ int main()
 
 	cv::imshow("src", src);
 	pcs.segmentation(src);
-	cv::imshow("fillsrc", src);
+	cv::Mat colorMask = pcs.getColorMask();
+	cv::imshow("colormask", colorMask);
 
-	//cv::imwrite("edge.png", src);
 
 	while (cv::waitKey(30));
 

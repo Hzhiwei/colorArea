@@ -30,7 +30,10 @@ namespace colorArea
 
 		floodFillAll();
 		vector<vector<Point>> edge = edgeTrackAll();
-		drawEdge(src, edge, -1, Scalar(0, 0, 0));
+		drawEdge(*(const_cast<Mat*>(srcImage)), edge, -1, Scalar(0, 0, 0));
+
+		cv::imshow("fillsrc", *srcImage);
+		cv::imwrite("edge.png", *srcImage);
 
 		return indexColor.size() - 1;
 
@@ -285,5 +288,22 @@ namespace colorArea
 				*((ColorStruct<unsigned char> *)dst.data + dst.cols * i->y + i->x) = colorData;
 			}
 		}
+	}
+	cv::Mat PureColorSegmentation::getColorMask(void)
+	{
+		Mat temp(maskImage.rows - 2, maskImage.cols - 2, CV_8UC3);
+
+		for (int i = 0; i < temp.rows; ++i)
+		{
+			ColorStruct<unsigned char> *colorRowi = temp.ptr<ColorStruct<unsigned char>>(i);
+			ColorStruct<unsigned char> *colorRowEnd = colorRowi + temp.cols;
+			int *maski = maskImage.ptr<int>(i + 1) + 1;
+			for (; colorRowi < colorRowEnd; ++colorRowi, ++maski)
+			{
+				*colorRowi = indexColor[*maski];
+			}
+		}
+
+		return temp;
 	}
 }

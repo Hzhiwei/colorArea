@@ -38,6 +38,14 @@ namespace colorArea
 		}
 
 		template<typename _T>
+		inline bool operator<(const ColorStruct<_T> & Param) const
+		{
+			if (b >= Param.b)	return false;
+			if (g >= Param.g)	return false;
+			if (r >= Param.r)	return false;
+		}
+
+		template<typename _T>
 		inline ColorStruct<T> operator%(const ColorStruct<_T> & Param) const
 		{
 			return ColorStruct<T>(
@@ -71,6 +79,7 @@ namespace colorArea
 		void drawEdge(cv::Mat &dst, const std::vector<std::vector<cv::Point>> &edge, int index, cv::Scalar color);
 		inline bool floodFillCheckAndCal(const ColorStruct<unsigned char> *color);
 		inline void addPointToAverage(const ColorStruct<unsigned char> *color);
+		cv::Mat getColorMask(void);
 
 	private:
 		cv::Mat maskImage;
@@ -97,6 +106,9 @@ namespace colorArea
 		//return color->distance(averageColor) < 7000;
 
 		if (averageColor.distance(*color) < 2500)
+		//if ((averageColor % (*color)) < ColorStruct<unsigned char>(80, 80, 80))
+		//if (((averageColor % (*color)) < ColorStruct<unsigned char>(30, 30, 30))
+		//	&& (averageColor.distance(*color) < 1850))
 		{
 			addPointToAverage(color);
 			return true;
